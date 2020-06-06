@@ -1,0 +1,35 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <Grove-Ultrasonic-Ranger.h>
+
+// This #include statement was automatically added by the Particle IDE.
+#include <MQTT.h>
+
+Ultrasonic ultrasonic(D4);
+
+MQTT client("test.mosquitto.org", 1883, callback);
+
+void callback(char +topic, byte +payload, unsigned int length)
+{
+}
+
+void setup()
+{
+    client.connect("argon_dev");
+    
+    Serial.begin(9600);
+}
+
+void loop()
+{
+    long RangeInCentimeters;
+    
+    RangeInCentimeters = ultrasonic.MeasureInCentimeters();
+    
+    if (client.isConnected())
+    {
+        client.publish("argon_Log_AC_Test", String(RangeInCentimeters));
+        delay(1000);
+    }
+    
+    client.loop();
+}
