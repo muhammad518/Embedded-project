@@ -1,0 +1,70 @@
+import RPi.GPIO as GPIO
+import CLI.mqtt.client as mqtt
+
+from fswebcam import Fswebcam
+from datetime import datetime
+
+import sys
+import requests
+import _thread
+import time
+
+
+
+
+GPIO.setnode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+camera_sys= Fswebcam()
+
+def Photon_notificatons_procedure():
+    print("Thread starting for Photon Notifications")
+    timer_x=0
+def camera_procedure():
+    print("Threat starting for camera")
+    print("Camera starting")
+    camera_sys= Fswebcam()
+    print("Notify user of movement")
+
+
+print("Thread Exiting for Camera")
+_thread.exit()
+
+def message_function(client, userdata, message):
+    topic= str(message.topic)
+    message=str(message.payload.decode("utf-8"))
+    message.replace("Photon_Log_AC_Test", '')
+
+
+    range_in_centimeters = int(message)
+
+    if  (range_in_centmeters < 100):
+        print("movement detected at the front door")
+        print("Stopping MQTT Connection Loop")
+        client.loop_stop()
+    
+        _thread.start_new_thread(camera_procedure, ())
+        _thread.start_new_thread(Photon_notification_procedure, ())
+    
+    
+        print("restarting MQTT Connection Loop")
+        main()
+    else:
+        print("Distance clear")
+        
+def main():
+    try:
+        photon_client = mqtt.Client("reception_1_mqtt")
+        photon_client.connection("test.mosquitto.org", 1883)
+        photon_client.subscribe("Photon_Log_AC_Test")
+        photon_client.on_message = message_function
+        photon_client.loop_start()
+        
+    except:
+            KeyboardInterrupt()
+            
+            
+            
+main()
+            
+    
